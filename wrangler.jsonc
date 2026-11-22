@@ -10,7 +10,7 @@
     {
       "binding": "DB",
       "database_name": "casamento-db",
-      "database_id": "COLE_AQUI_O_ID_DA_BASE_DE_DADOS"
+      "database_id": "6fbe3d7e-7552-4833-93f3-87763f741d61"
     }
   ],
   "observability": { "enabled": true }
