@@ -1,0 +1,60 @@
+<!DOCTYPE html><html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Painel dos noivos</title>
+<style>
+:root{--bg:#f5f5f3;--ink:#3b2a0a;--gold:#b8892b;--line:#e3d8bf;--card:#fff;--ok:#2f7d32;--no:#a3322a}
+@media(prefers-color-scheme:dark){:root{--bg:#1d1a12;--ink:#f1e9d6;--gold:#d4a95a;--line:#3a3322;--card:#272217;--ok:#7bc67e;--no:#e57f76}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 Georgia,serif;padding:16px}
+main{max-width:720px;margin:auto}h1{font-size:26px;color:var(--gold);margin:8px 0 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:10px}
+input,button{font:inherit;color:inherit}
+input{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+button,.btn{padding:9px 14px;border:1px solid var(--gold);background:none;border-radius:8px;cursor:pointer;text-decoration:none;display:inline-block;color:var(--ink)}
+button.on,.pri{background:var(--gold);color:#fff}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stats b{display:block;font-size:28px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.tag{font-size:12px;padding:2px 8px;border-radius:99px;border:1px solid}
+.sim{color:var(--ok)}.nao{color:var(--no)}
+.msg{white-space:pre-wrap;font-style:italic;margin:8px 0 0}.meta{font-size:13px;opacity:.7;color:var(--ink)}
+.err{color:var(--no);min-height:1.4em}[hidden]{display:none!important}
+</style></head><body><main>
+<h1>Painel dos noivos</h1>
+<section id="login" class="card"><label for="s">Palavra-passe</label><input id="s" type="password" autocomplete="current-password"><p class="err" id="le"></p><button class="pri" id="go">Entrar</button></section>
+<section id="painel" hidden>
+<div class="stats" id="st"></div>
+<div class="row"><input id="q" placeholder="Pesquisar nome ou telefone…"></div>
+<div class="row" id="fl"><button data-f="todos" class="on">Todos</button><button data-f="sim">Vêm</button><button data-f="nao">Não vêm</button></div>
+<div class="row"><button id="rf">Atualizar</button><a class="btn" href="/api/exportar.csv">Exportar CSV</a><button id="out">Sair</button></div>
+<div id="ls"></div>
+</section></main>
+<script>
+const $=id=>document.getElementById(id);let dados=[],filtro='todos';
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+function mostrar(on){$('login').hidden=on;$('painel').hidden=!on}
+async function api(url,opt){const r=await fetch(url,opt);if(r.status===401){mostrar(false);throw 0}return r}
+async function carregar(){const r=await api('/api/lista');dados=(await r.json()).lista;mostrar(true);desenhar()}
+function data(s){return new Date(s.replace(' ','T')+'Z').toLocaleString('pt-PT',{timeZone:'Africa/Maputo',dateStyle:'short',timeStyle:'short'})}
+function desenhar(){
+  const sim=dados.filter(d=>d.presenca==='sim');
+  const st=$('st');st.replaceChildren();
+  [['Vêm',sim.length],['Pessoas no total',sim.reduce((a,d)=>a+d.pessoas,0)],['Não vêm',dados.length-sim.length],['Respostas',dados.length]]
+    .forEach(([k,v])=>{const c=el('div','card');c.append(el('b',0,v),el('span','meta',k));st.append(c)});
+  const q=$('q').value.toLowerCase().trim(),ls=$('ls');ls.replaceChildren();
+  dados.filter(d=>(filtro==='todos'||d.presenca===filtro)&&(!q||(d.nome+' '+d.telefone).toLowerCase().includes(q))).forEach(d=>{
+    const c=el('div','card'),h=el('div','row');h.style.justifyContent='space-between';h.style.margin='0 0 6px';
+    h.append(el('strong',0,d.nome),el('span','tag '+d.presenca,d.presenca==='sim'?'Vem ('+d.pessoas+')':'Não vem'));
+    const a=el('a','meta','+'+d.telefone);a.href='https://wa.me/'+d.telefone;a.target='_blank';a.rel='noopener';
+    c.append(h,a);if(d.mensagem)c.append(el('p','msg',d.mensagem));
+    const f=el('div','row');f.style.justifyContent='space-between';f.style.alignItems='center';
+    f.append(el('span','meta',data(d.atualizado_em)));
+    const b=el('button',0,'Apagar');
+    b.onclick=async()=>{if(!confirm('Apagar a resposta de '+d.nome+'?'))return;await api('/api/confirmacao/'+d.id,{method:'DELETE'});carregar()};
+    f.append(b);c.append(f);ls.append(c)});
+}
+$('go').onclick=async()=>{$('le').textContent='';
+  const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({senha:$('s').value})});
+  if(r.ok){$('s').value='';carregar()}else $('le').textContent=(await r.json()).erro||'Erro.'};
+$('s').onkeydown=e=>{if(e.key==='Enter')$('go').click()};
+$('fl').onclick=e=>{const f=e.target.dataset.f;if(!f)return;filtro=f;[...$('fl').children].forEach(b=>b.classList.toggle('on',b===e.target));desenhar()};
+$('q').oninput=desenhar;$('rf').onclick=carregar;
+$('out').onclick=async()=>{await fetch('/api/logout',{method:'POST'});mostrar(false)};
+carregar().catch(()=>{});
+</script></body></html>
