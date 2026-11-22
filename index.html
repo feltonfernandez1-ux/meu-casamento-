@@ -65,8 +65,28 @@ input:focus,textarea:focus{outline:0;border-bottom-width:2px}
 <p class="t gt" style="top:45%;font-size:2.6cqw">COM A BENÇÃO DE SEUS PAIS,<br>TE CONVIDAM PARA CELEBRAR O AMOR</p>
 <p class="t gt" style="top:52.5%;font-size:3.4cqw;line-height:1.5">24 de Dezembro de 2026<br>Quinta-feira, às 15:00h</p>
 <p class="t gt" style="top:64.5%;font-size:3cqw">Clique no ícone</p>
-<button class="ic" id="rb" style="left:50%;top:69%;font-size:3.3cqw" aria-label="Confirmação de presença"><span class="hand">👉</span>
+<button class="ic" id="rb" style="left:50%;top:69%;font-size:3.3cqw" aria-label="Confirmação de presença">
+<span class="hand">👉</span>
+<svg viewBox="0 0 48 48" fill="none" stroke="#b8892b" stroke-width="3" stroke-linecap="round">
+<rect x="5" y="9" width="30" height="28" rx="3"/>
+<path d="M5 17h30M13 5v8M27 5v8"/>
+<circle cx="35" cy="34" r="9" fill="#f5f5f3"/>
+<path d="M35 29v5l3 2"/>
+</svg>
+<span class="gt">CONFIRMAÇÃO DE<br>PRESENÇA</span>
+</button>
 </div></section>
+
+<div id="rsvp"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="rt"><button class="x" id="cx" aria-label="Fechar">×</button>
+<h2 class="gt" id="rt">Confirmação de Presença</h2><p class="sub">Por favor confirme a sua presença até <span id="dl"></span>.</p>
+<form id="f" novalidate><label for="n">Nome completo</label><input id="n" type="text" autocomplete="name"><div class="er" id="e1"></div>
+<label for="p">Número de telefone</label><input id="p" type="tel" value="+258 " autocomplete="tel"><div class="er" id="e2"></div>
+<label>Presença</label><div class="pills" role="radiogroup"><button type="button" data-v="sim">Estarei presente</button><button type="button" data-v="nao">Não poderei comparecer</button></div><div class="er" id="e3"></div>
+<label for="m">Mensagem especial para os noivos</label><textarea id="m" rows="4" placeholder="Deixe aqui uma mensagem carinhosa…"></textarea>
+<button class="go" id="sb">Enviar confirmação</button></form>
+<div class="ok"><h2 class="gt">Obrigado!</h2><p id="okt"></p><p style="font-size:14px">Para os noivos receberem a sua confirmação, toque em “Enviar” no WhatsApp.</p><a class="wa" id="wa" href="#" target="_blank" rel="noopener">Enviar no WhatsApp</a></div></div></div>
+
+<script>
 
 <div id="rsvp"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="rt"><button class="x" id="cx" aria-label="Fechar">×</button>
 <h2 class="gt" id="rt">Confirmação de Presença</h2><p class="sub">Por favor confirme a sua presença até <span id="dl"></span>.</p>
