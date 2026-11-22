@@ -78,9 +78,36 @@ input:focus,textarea:focus{outline:0;border-bottom-width:2px}
 
 
 <script>
-const CFG={whatsapp:"258844401748",maps:"https://maps.google.com/?q=Salão+da+Piscina+da+Soalpo",deadline:"[data limite]"};
+const CFG={
+  whatsapp:"258846127135",
+  maps:"https://maps.google.com/?q=Salão+da+Piscina+da+Soalpo",
+  deadline:"2026-12-23T23:59:00+02:00"
+};
 const $=s=>document.getElementById(s),B=document.body;let ans="";
 $('mp').href=CFG.maps;$('dl').textContent=CFG.deadline;
+  // Contador regressivo
+const dataLimite = new Date(CFG.deadline);
+
+function atualizarContador() {
+  const diferenca = dataLimite - new Date();
+
+  if (diferenca <= 0) {
+    $('dl').textContent = 'Prazo encerrado';
+    clearInterval(contadorIntervalo);
+    return;
+  }
+
+  const dias = Math.floor(diferenca / 86400000);
+  const horas = Math.floor(diferenca / 3600000) % 24;
+  const minutos = Math.floor(diferenca / 60000) % 60;
+  const segundos = Math.floor(diferenca / 1000) % 60;
+
+  $('dl').textContent =
+    `${dias}d ${horas}h ${minutos}m ${segundos}s`;
+}
+
+atualizarContador();
+const contadorIntervalo = setInterval(atualizarContador, 1000);
 const V=$('vid'),reveal=()=>B.classList.add('show');
 V.addEventListener('ended',reveal);V.addEventListener('timeupdate',()=>{if(V.duration&&V.currentTime>V.duration-.5)reveal()});V.onerror=reveal;setTimeout(reveal,9000);
 V.play().catch(()=>{$('openBtn').hidden=false});
