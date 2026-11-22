@@ -8,3 +8,4 @@ CREATE TABLE IF NOT EXISTS confirmacoes (
   criado_em TEXT NOT NULL DEFAULT (datetime('now')),
   atualizado_em TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
