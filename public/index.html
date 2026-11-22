@@ -43,8 +43,7 @@ body{background:radial-gradient(circle at 50% 30%,var(--ol2),var(--ol) 70%);font
 .x{position:absolute;right:14px;top:10px;font-size:28px;background:none;border:0;color:var(--gold);cursor:pointer}
 h2{font:400 44px var(--scr);margin-bottom:6px}.sub{font-size:14px;margin-bottom:22px;font-weight:600}
 label{display:block;text-align:left;font:700 11px var(--sans);letter-spacing:.15em;text-transform:uppercase;color:#6b5420;margin-top:18px}
-input[type=text],input[type=tel],textarea{width:100%;border:0;border-bottom:1px solid var(--gold);background:none;padding:8px 2px;font:600 16px var(--sans);color:var(--ink);resize:none;border-radius:0}
-input:focus,textarea:focus{outline:0;border-bottom-width:2px}
+input[type=text],input[type=tel],input[type=number],textarea{width:100%;border:0;border-bottom:1px solid var(--gold);background:none;padding:8px 2px;font:600 16px var(--sans);color:var(--ink);resize:none;border-radius:0}
 .pills{display:flex;gap:10px;margin-top:8px}.pills button{flex:1;padding:12px 6px;border:1px solid var(--gold);background:none;border-radius:99px;font:700 13px var(--sans);color:var(--ink);cursor:pointer}
 .pills button.on{background:linear-gradient(100deg,#a8793a,#d4a95a);color:#fffaf0;border-color:transparent}
 .go{width:100%;margin-top:26px;padding:15px;border:0;border-radius:6px;background:linear-gradient(100deg,#a8793a,#d4a95a);color:#fffaf0;font:700 13px var(--sans);letter-spacing:.2em;text-transform:uppercase;cursor:pointer;transition:transform .2s}.go:hover{transform:translateY(-2px)}.go:disabled{opacity:.6}
@@ -81,6 +80,7 @@ input:focus,textarea:focus{outline:0;border-bottom-width:2px}
 <form id="f" novalidate><label for="n">Nome completo</label><input id="n" type="text" autocomplete="name"><div class="er" id="e1"></div>
 <label for="p">Número de telefone</label><input id="p" type="tel" value="+258 " autocomplete="tel"><div class="er" id="e2"></div>
 <label>Presença</label><div class="pills" role="radiogroup"><button type="button" data-v="sim">Estarei presente</button><button type="button" data-v="nao">Não poderei comparecer</button></div><div class="er" id="e3"></div>
+  <div id="pessoasBox"><label for="q">Quantas pessoas (contando consigo)?</label><input id="q" type="number" min="1" max="10" value="1" inputmode="numeric"></div>
 <label for="m">Mensagem especial para os noivos</label><textarea id="m" rows="4" placeholder="Deixe aqui uma mensagem carinhosa…"></textarea>
 <button class="go" id="sb">Enviar confirmação</button></form>
 <div class="ok"><h2 class="gt">Obrigado!</h2><p id="okt"></p><p style="font-size:14px">Para os noivos receberem a sua confirmação, toque em “Enviar” no WhatsApp.</p><a class="wa" id="wa" href="#" target="_blank" rel="noopener">Enviar no WhatsApp</a></div></div></div>
@@ -126,20 +126,28 @@ document.onkeydown=e=>{if(e.key==='Escape')B.classList.remove('r-on')};
 document.querySelectorAll('.pills button').forEach(b=>b.onclick=()=>{ans=b.dataset.v;document.querySelectorAll('.pills button').forEach(x=>x.classList.toggle('on',x==b))});
 
 /* Envio */
-$('f').onsubmit=e=>{
+document.querySelectorAll('.pills button').forEach(b=>b.addEventListener('click',()=>{$('pessoasBox').style.display=b.dataset.v==='sim'?'':'none'}));
+$('f').onsubmit=async e=>{
   e.preventDefault();
   const n=$('n').value.trim(),p=$('p').value.trim(),m=$('m').value.trim();
+  const q=Math.min(Math.max(parseInt($('q').value,10)||1,1),10);
   $('e1').textContent=n.length<3?'Indique o seu nome completo.':'';
   $('e2').textContent=p.replace(/\D/g,'').length<9?'Indique um número de telefone válido.':'';
   $('e3').textContent=ans?'':'Escolha uma opção.';
   if(document.querySelector('.er:not(:empty)'))return;
   $('sb').disabled=true;$('sb').textContent='A enviar…';
   const yes=ans==='sim';
-  const txt=`Olá! Sou ${n} (${p}). ${yes?'Confirmo a minha presença':'Não poderei comparecer'} no casamento de Nhamato e Dinito.${m?'\nMensagem: '+m:''}`;
-  const wl=`https://wa.me/${CFG.whatsapp}?text=`+encodeURIComponent(txt);
-  window.open(wl,'_blank');
-  $('okt').textContent=yes?`Obrigado, ${n}! A sua resposta foi registada.`:'Lamentamos que não possa estar presente. Obrigado pela sua mensagem!';
-  $('wa').href=wl;
+  let guardado=false;
+  try{
+    const r=await fetch('/api/rsvp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:n,telefone:p,presenca:ans,pessoas:yes?q:0,mensagem:m})});
+    guardado=r.ok;
+  }catch(_){}
+  const txt=`Olá! Sou ${n} (${p}). ${yes?'Confirmo a minha presença'+(q>1?' ('+q+' pessoas)':''):'Não poderei comparecer'} no casamento de Nhamato e Dinito.${m?'\nMensagem: '+m:''}`;
+  $('wa').href=`https://wa.me/${CFG.whatsapp}?text=`+encodeURIComponent(txt);
+  $('okt').textContent=guardado
+    ?(yes?`Obrigado, ${n}! A sua presença foi confirmada.`:'Lamentamos que não possa estar presente. Obrigado pela sua resposta!')
+    :'Não conseguimos guardar a sua resposta. Por favor, toque no botão abaixo para a enviar por WhatsApp.';
+  document.querySelector('.ok p:nth-of-type(2)').textContent=guardado?'Se quiser, avise também os noivos por WhatsApp.':'';
   $('f').closest('.sheet').classList.add('done');
 };
 </script></body></html>
