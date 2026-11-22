@@ -9,3 +9,5 @@ CREATE TABLE IF NOT EXISTS confirmacoes (
   atualizado_em TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+
+
